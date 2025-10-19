@@ -32,13 +32,27 @@ define Device/airoha_an7581-evb
 endef
 TARGET_DEVICES += airoha_an7581-evb
 
-define Device/airoha_an7581-evb-emmc
-  DEVICE_VENDOR := Airoha
-  DEVICE_MODEL := AN7581 Evaluation Board (EMMC)
-  DEVICE_DTS := an7581-evb-emmc
-  DEVICE_PACKAGES := kmod-i2c-an7581
-  ARTIFACT/preloader.bin := an7581-preloader rfb
-  ARTIFACT/bl31-uboot.fip := an7581-bl31-uboot rfb
-  ARTIFACTS := preloader.bin bl31-uboot.fip
+define Device/bell_xg-040g-md
+  $(call Device/FitImageLzma)
+  DEVICE_VENDOR := Bell
+  DEVICE_MODEL := XG-040G-MD
+  DEVICE_DTS := an7581-xg-040g-md
+  KERNEL_LOADADDR := 0x80088000
+  UBINIZE_OPTS := -E 5
+  BLOCKSIZE := 128k
+  PAGESIZE := 2048
+  KERNEL_SIZE := 10240k
+  IMAGE_SIZE := 261120k
+  KERNEL_IN_UBI := 1
+  UBINIZE_OPTS := -m 2048 -p 128KiB -s 2048
+  IMAGES += factory.bin sysupgrade.bin
+  IMAGE/factory.bin := append-kernel | pad-to $$$$(KERNEL_SIZE) | append-ubi
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+  DEVICE_PACKAGES := \
+	kmod-phy-airoha-en8811h \
+	kmod-gpio-button-hotplug \
+	kmod-i2c-an7581 \
+	uboot-envtools
+  SOC := an7581
 endef
-TARGET_DEVICES += airoha_an7581-evb-emmc
+TARGET_DEVICES += bell_xg-040g-md
