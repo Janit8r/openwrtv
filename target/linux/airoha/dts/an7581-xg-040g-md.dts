@@ -19,8 +19,7 @@
 			reg = <0x00>;
 		};
 
-	
-	bank@1 {
+		bank@1 {
 			reg = <0x01>;
 		};
 	};
@@ -34,9 +33,9 @@
 	};
 
 	chosen {
-		bootargs = "console=ttyS0,115200n8 loglevel=7  earlycon";
+		bootargs = "console=ttyS0,115200n8 loglevel=3 quiet earlycon";
 		stdout-path = "serial0:115200n8";
-		bootargs-append = " ubi.mtd=rootfs,2048 rootfstype=squashfs loglevel=8 ubi.block=0,rootfs ro init=/etc/preinit";
+		bootargs-append = " ubi.mtd=rootfs,2048 rootfstype=squashfs ubi.block=0,rootfs ro init=/etc/preinit irqaffinity=0,1,2,3 nohz=off rcu_nocbs=0-3 isolcpus=3 skew_tick=1";
 	};
 
 	memory@80000000 {
@@ -101,6 +100,7 @@
 		conf {
 			pins = "gpio2";
 			output-high;
+			drive-strength = <8>;
 		};
 	};
 
@@ -155,16 +155,20 @@
 
 &snfi {
 	status = "okay";
+	spi-max-frequency = <104000000>;
 };
 
 
 &spi_nand {
 	#address-cells = <1>;
 	#size-cells = <1>;
-		partitions {
+	spi-tx-bus-width = <4>;
+	spi-rx-bus-width = <4>;
+
+	partitions {
 		compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
+		#address-cells = <1>;
+		#size-cells = <1>;
 
 			partition@0 {
 				label = "bootloader";
@@ -186,14 +190,17 @@
 
 &i2c0 {
 	status = "okay";
+	clock-frequency = <400000>;
 };
 
 &eth {
 	status = "okay";
+	mediatek,eth-offload = "checksum", "tso", "lro";
 };
 
 &gdm1 {
 	status = "okay";
+	max-frame-size = <9000>;
 };
 
 &gdm4 {
@@ -201,6 +208,9 @@
 	phy-handle = <&phy15>;
 	phy-mode = "2500base-x";
 	label = "wan";
+	max-frame-size = <9000>;
+	tx-queues = <8>;
+	rx-queues = <8>;
 };
 
 &switch {
@@ -212,16 +222,19 @@
 		gsw_port2: port@2 {
 			status = "okay";
 			label = "lan2";
+			pause;
 		};
 
 		gsw_port3: port@3 {
 			status = "okay";
 			label = "lan3";
+			pause;
 		};
 
 		gsw_port4: port@4 {
 			status = "okay";
 			label = "lan4";
+			pause;
 		};
 	};
 
@@ -230,6 +243,7 @@
 			status = "okay";
 			pinctrl-names = "gbe-led";
 			pinctrl-0 = <&gswp2_led0_pins>;
+			eee-broken-1000t;
 
 			leds {
 				led@0 {
@@ -245,6 +259,7 @@
 			status = "okay";
 			pinctrl-names = "gbe-led";
 			pinctrl-0 = <&gswp3_led0_pins>;
+			eee-broken-1000t;
 
 			leds {
 				led@0 {
@@ -260,6 +275,7 @@
 			status = "okay";
 			pinctrl-names = "gbe-led";
 			pinctrl-0 = <&gswp4_led0_pins>;
+			eee-broken-1000t;
 
 			leds {
 				led@0 {
@@ -279,6 +295,7 @@
 			reset-gpios = <&en7581_pinctrl 31 GPIO_ACTIVE_LOW>;
 			reset-assert-us = <10000>;
 			reset-deassert-us = <2000000>;
+			max-speed = <2500>;
 
 			leds {
 				#address-cells = <1>;
@@ -296,8 +313,28 @@
 
 &usb0 {
 	status = "okay";
+	usb3-lpm-capable;
+	maximum-speed = "super-speed";
 };
 
 &usb1 {
 	status = "okay";
+	usb3-lpm-capable;
+	maximum-speed = "super-speed";
+};
+
+&npu {
+	status = "okay";
+};
+
+&pcie0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pcie0_rst_pins>;
+};
+
+&pcie1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pcie1_rst_pins>;
 };
